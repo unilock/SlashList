@@ -30,6 +30,8 @@ public class ListCommand implements ICommand {
 
     @Override
     public void handle(SlashCommandInteraction interaction) {
+        interaction.deferReply().setEphemeral(SlashList.CONFIG.commands.list.ephemeral.value()).queue();
+
         final var servers = SlashList.getProxy().getAllServers();
         updateMaxPlayers(servers);
 
@@ -66,7 +68,7 @@ public class ListCommand implements ICommand {
         }
         sb.append("```");
 
-        interaction.reply(sb.toString()).setEphemeral(SlashList.CONFIG.commands.list.ephemeral.value()).queue();
+        interaction.getHook().editOriginal(sb.toString()).queue();
     }
 
     private void updateMaxPlayers(Collection<RegisteredServer> servers) {
