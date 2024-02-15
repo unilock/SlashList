@@ -1,10 +1,11 @@
 package cc.unilock.slashlist.discord.command;
 
+import cc.unilock.discordlib.discord.command.ICommand;
+import cc.unilock.discordlib.lib.net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction;
 import cc.unilock.slashlist.SlashList;
 import cc.unilock.slashlist.util.Placeholders;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import com.velocitypowered.api.proxy.server.ServerPing;
-import net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction;
 
 import java.util.Collection;
 import java.util.HashMap;

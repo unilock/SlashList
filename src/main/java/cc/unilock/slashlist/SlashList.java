@@ -1,10 +1,9 @@
 package cc.unilock.slashlist;
 
+import cc.unilock.discordlib.DiscordLib;
 import cc.unilock.slashlist.config.Config;
-import cc.unilock.slashlist.discord.Discord;
+import cc.unilock.slashlist.discord.command.ListCommand;
 import com.google.inject.Inject;
-import com.velocitypowered.api.event.Subscribe;
-import com.velocitypowered.api.event.proxy.ProxyShutdownEvent;
 import com.velocitypowered.api.plugin.Dependency;
 import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
@@ -19,14 +18,16 @@ import java.nio.file.Path;
         description = "/list",
         version = Tags.VERSION,
         authors = {"unilock"},
-        dependencies = {@Dependency(id = "miniplaceholders", optional = true)}
+        dependencies = {
+                @Dependency(id = "discordlib"),
+                @Dependency(id = "miniplaceholders", optional = true)
+        }
 )
 public final class SlashList {
     public static Config CONFIG;
 
     private static ProxyServer proxy;
     private static Logger logger;
-    private static Discord discord;
 
     @Inject
     public SlashList(ProxyServer proxy, Logger logger, @DataDirectory Path path) {
@@ -35,17 +36,8 @@ public final class SlashList {
 
         CONFIG = Config.createToml(path, "", "config", Config.class);
 
-        if (CONFIG.discord.token.value().equals(CONFIG.discord.token.getDefaultValue()) || CONFIG.discord.guild.value().equals(CONFIG.discord.guild.getDefaultValue())) {
-            SlashList.logger.error("Please configure the plugin via the config.toml file!");
-        } else {
-            discord = new Discord();
-        }
-    }
-
-    @Subscribe
-    public void onProxyShutdown(ProxyShutdownEvent event) {
-        if (discord != null) {
-            discord.shutdown();
+        if (DiscordLib.getDiscord() != null) {
+            DiscordLib.getDiscord().registerCommand(new ListCommand());
         }
     }
 
@@ -55,9 +47,5 @@ public final class SlashList {
 
     public static Logger getLogger() {
         return logger;
-    }
-
-    public static Discord getDiscord() {
-        return discord;
     }
 }

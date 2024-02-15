@@ -1,5 +1,6 @@
 plugins {
 	id 'java'
+	id 'maven-publish'
 	id 'com.github.johnrengelman.shadow' version '8.1.1'
 	id 'net.kyori.blossom' version '2.1.0'
 	id 'xyz.jpenilla.run-velocity' version '2.2.3'
@@ -12,20 +13,32 @@ base {
 version = project.plugin_version
 group = project.maven_group
 
+configurations {
+	shade
+}
+
 repositories {
 	maven { url = "https://papermc.io/repo/repository/maven-public/" }
 	maven { url = "https://repo.sleeping.town/" }
 	mavenCentral()
+	maven { url = "https://jitpack.io/" }
 }
 
 dependencies {
 	annotationProcessor(compileOnly("com.velocitypowered:velocity-api:${project.velocity_version}"))
 
-	shadow implementation("net.dv8tion:JDA:${project.jda_version}") {
-		exclude module: 'opus-java'
-	}
-	shadow implementation("folk.sisby:kaleido-config:${project.kaleido_version}")
+	implementation("com.github.unilock:discordlib:${project.discordlib_version}")
+	implementation shade("folk.sisby:kaleido-config:${project.kaleido_version}")
 	compileOnly "io.github.miniplaceholders:miniplaceholders-api:${project.miniplaceholders_version}"
+}
+
+compileJava {
+	options.encoding = "UTF-8"
+	options.release = 17
+}
+
+java {
+	withSourcesJar()
 }
 
 build {
@@ -33,7 +46,14 @@ build {
 }
 
 shadowJar {
-	archiveClassifier.set(null)
+	setArchiveClassifier(null)
+	setConfigurations([project.configurations.shade])
+	relocate("folk.sisby", "cc.unilock.slashlist.lib.folk.sisby")
+	minimize()
+}
+
+runVelocity {
+	velocityVersion(project.velocity_version)
 }
 
 sourceSets {
@@ -46,6 +66,19 @@ sourceSets {
 	}
 }
 
-runVelocity {
-	velocityVersion(project.velocity_version)
+// Configure the maven publication
+publishing {
+	publications {
+		mavenJava(MavenPublication) {
+			from components.java
+		}
+	}
+
+	// See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
+	repositories {
+		// Add repositories to publish to here.
+		// Notice: This block does NOT have the same function as the block in the top level.
+		// The repositories here will be used for publishing your artifact, not for
+		// retrieving dependencies.
+	}
 }
